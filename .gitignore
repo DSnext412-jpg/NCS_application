@@ -1,0 +1,38 @@
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Application generated data (created at runtime by the app)
+data/
+backups/
+invoices/
+reports/
+logs/
+*.db
+
+# IDE / editor configuration
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Build artifacts (PyInstaller packaging)
+build/
+dist/
+release/
