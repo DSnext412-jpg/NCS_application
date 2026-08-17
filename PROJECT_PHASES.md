@@ -253,17 +253,6 @@ Other.
   Check-out remain. Walk-in dialog unchanged (always Walk-in source).
 - Booking Details shows "Payment Arrangement: Paid Online / Pay at Hotel"
   for OTA-sourced bookings only.
-- **Future-dated reservations do not mark the room "Reserved".**
-  `_set_room_reserved_if_vacant` only reserves a vacant room when the stay
-  starts today (or earlier); a reservation whose check-in is in the future
-  leaves the room available so it can still be used before the check-in date
-  (the reservation itself still blocks its own dates).
-- New tests: 5 paid-online (`test_paid_online_ota_booking_marks_paid_online_without_payment`,
-  `test_paid_online_rejected_for_booking_com`,
-  `test_paid_online_hidden_for_walkin_source`,
-  `test_pay_at_hotel_ota_booking_has_no_online_payment`,
-  `test_walkin_paid_online_marks_paid_online_without_payment`) plus
-  `test_future_reservation_does_not_mark_room_reserved`.
 
 # VERIFICATION STATUS
 
