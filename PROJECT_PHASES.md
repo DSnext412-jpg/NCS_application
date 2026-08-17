@@ -1,13 +1,3 @@
-# Nashik Comfort Stay — Project Phases
-
-Permanent project history for the Nashik Comfort Stay hotel management system.
-
-> **Source of truth:** the actual source code, services, UI, tests and database
-> schema. The `README.md` is NOT authoritative — it still describes the app as
-> "Phase 1" even though all of Phases 1–8 are implemented.
->
-> **Test status:** 226 tests, all passing, full suite runs in ~13–17 s.
-> Tests use temporary SQLite databases and never touch production data.
 
 ---
 
@@ -29,11 +19,6 @@ Permanent project history for the Nashik Comfort Stay hotel management system.
 | Initial hotel configuration | IMPLEMENTED | Startup seeds settings, 11 rooms (AC 202–207, Non-AC 208–212), 9 booking sources — idempotent |
 | Admin-password placeholder | IMPLEMENTED | Settings carry `admin_password_set=false`, `admin_password_hash` empty at start |
 
-Notes:
-- Room pricing is intentionally NOT stored on rooms; rates are manual per booking.
-- GST is disabled (`GST_ENABLED = False`, `GSTIN = ""`).
-- A 12th guest/property room is intentionally not seeded (DB records are the source of truth; none exists yet).
-
 ---
 
 # PHASE 2 — ROOMS + RECEPTION DASHBOARD
@@ -50,9 +35,6 @@ Notes:
 | Room status board | IMPLEMENTED | `ui/pages/rooms_page.py` (room-card grid) and dashboard board; `widgets/room_card.py` (clickable hover card, tooltip) |
 | Reception dashboard | IMPLEMENTED | `ui/pages/dashboard_page.py` — today's check-ins, today's check-outs, occupancy counts, room board, upcoming bookings, quick actions |
 | Quick navigation | IMPLEMENTED | Sidebar items Dashboard / Rooms / Check-in / Check-out etc.; `main_window._quick_action` |
-
-Notes:
-- Status flow RESERVED → CHECK-IN → OCCUPIED → CHECK-OUT → CLEANING → VACANT is enforced via booking lifecycle (Phase 3) and room transitions; reception can also manually correct any status via a confirmation dialog.
 
 ---
 
@@ -80,9 +62,6 @@ Notes:
 | Today's activity | IMPLEMENTED | `get_today_check_ins`, `get_today_check_outs`, `get_upcoming_bookings` (next N days), `get_active_booking_for_room` |
 | Booking status history | IMPLEMENTED | `BookingStatusHistory` model + `booking_service.get_booking_status_history`; shown in `BookingDetailsDialog` |
 | Manual rates & charges | IMPLEMENTED | `room_rate`, `extra_person_charge`, `early_check_in_charge`, `late_check_out_charge` on the booking (manual entry) |
-
-Partial:
-- **Guest history from Bookings page** — guest booking history is reachable only from the Guests page / global search, not from the Bookings page.
 
 ---
 
@@ -128,10 +107,6 @@ Partial:
 | Billing at checkout | IMPLEMENTED | Booking must be CHECKED_OUT before invoicing; invoiceable-state validation |
 | GST | IMPLEMENTED (disabled) | GST figures always 0; never printed — property has no GST |
 
-Partial:
-- **Reissue mechanism** — a corrected/reissued invoice flow for finalized
-  invoices is a noted future need (finalized invoices remain immutable).
-
 ---
 
 # PHASE 6 — ADMIN + REPORTS
@@ -157,10 +132,6 @@ Partial:
 | Booking source management | IMPLEMENTED | Admin add + enable/disable (disable-only, historical references retained) |
 | Audit log | IMPLEMENTED | `app/services/audit_service.py` + `ui/pages/admin_audit_page.py` — login, logout, password change, settings change, source add/disable, logo change, report generation; passwords/secrets never logged |
 | Report generation audit | IMPLEMENTED | `ACTION_REPORT_GENERATED` hook used by reports page |
-
-Partial:
-- **Report coverage** — implemented reports are Financial (revenue/payments/outstanding), Booking Sources, Occupancy, Booking Trend. The spec's list also mentions standalone Cancellations, No-shows and Invoices reports, which are NOT implemented as separate report types (cancelled/no-show bookings are excluded from invoicing; they appear in booking filters but not as a report).
-
 ---
 
 # PHASE 7 — RECEPTION WORKFLOW + UI/UX
@@ -190,11 +161,6 @@ Partial:
 | Payments page queries | IMPLEMENTED | `PaymentsPage` with period/status/search filters |
 | ID masking | IMPLEMENTED | `mask_id_number` used in guest details display |
 
-Partial / not-yet-wired (small gaps only):
-- **Keyboard shortcuts** — only Ctrl+K.
-- **Housekeeping** — sidebar item maps to Coming Soon (by design: no separate housekeeping login; reception manages cleaning via room status).
-- **Backup** — sidebar item maps to Coming Soon (Phase 8 scope — intentionally NOT implemented).
-
 ---
 
 # PHASE 8 — BACKUP, RESTORE & DATA SAFETY
@@ -222,11 +188,6 @@ Partial / not-yet-wired (small gaps only):
 | Dashboard hardening | IMPLEMENTED | Eager-loaded `guest`/`room` in today's check-ins/check-outs + upcoming bookings — fixes a latent `DetachedInstanceError` when a restore reintroduces bookings |
 | No encryption (documented) | IMPLEMENTED | Metadata explicitly states `encrypted: false`; design decision documented in the service docstring |
 
-Notes:
-- Backups are intentionally NOT encrypted — a documented design choice for a local, offline, single-machine app.
-- Tests (21 in `tests/test_backup_service.py`) use temp DBs, temp backup folders and `NCS_APP_DATA`; the production `data/hotel.db`, invoice PDFs and logo are never touched.
-- Manual end-to-end verified: guest → booking (walk-in, advance) → check-out → payment → invoice → backup → mutate data → restore → data identical (guest, booking, 2 payments, 1 invoice).
-
 ---
 
 # PHASE 9 - OTA PAID-ONLINE BOOKINGS
@@ -253,9 +214,3 @@ Other.
   Check-out remain. Walk-in dialog unchanged (always Walk-in source).
 - Booking Details shows "Payment Arrangement: Paid Online / Pay at Hotel"
   for OTA-sourced bookings only.
-
-# VERIFICATION STATUS
-
-- **Test suite:** 232 tests across 14 modules (`tests/`), all passing; full suite ~18 s.
-- **Production database:** `data/hotel.db` (192,512 bytes), LastWriteTime `14-08-2026 14:03:17`. Tests use temporary SQLite databases (`tmp_path`); the production DB is never opened or modified by the suite.
-- **Smoke regression:** `scripts/smoke_run.py` → "SMOKE TEST PASSED" (headless launch, temp data dir).
