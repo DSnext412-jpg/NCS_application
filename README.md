@@ -145,16 +145,6 @@ Requirements: `pyinstaller` installed in the virtual environment
   (output in `dist\NashikComfortStayPortable\`).
 - The build never touches production data or `%LOCALAPPDATA%\NashikComfortStay\`.
 
-## Data locations
-
-Writable application data (database, backups, invoices, reports, logs) is
-resolved through the centralized path manager in `app/core/paths.py`:
-
-- Development mode: stored under the project root (`data/`, `backups/`, ...).
-- Packaged build: `%LOCALAPPDATA%\NashikComfortStay\`.
-- Override for testing/CI: set the `NCS_APP_DATA` environment variable.
-
-The SQLite database file is `data/hotel.db`.
 
 ## Notes
 
