@@ -177,8 +177,3 @@ The SQLite database file is `data/hotel.db`.
   password is set on first use (stored as a PBKDF2 hash, never plaintext).
 - Backups are intentionally **not** encrypted — a documented design choice for
   a local, offline, single-machine application.
-
-## Project history
-
-See `PROJECT_PHASES.md` for the detailed phase-by-phase implementation record
-(the authoritative project history). `README.md` is a summary only.
