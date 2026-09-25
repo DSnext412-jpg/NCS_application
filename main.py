@@ -1,13 +1,3 @@
-"""Nashik Comfort Stay — application entry point.
-
-Run with::
-
-    python main.py
-
-The application is local-first and offline-first: nothing here requires
-an internet connection.
-"""
-
 from __future__ import annotations
 
 import logging
@@ -30,11 +20,6 @@ logger = logging.getLogger(__name__)
 
 
 def _resolve_database_startup(paths: Paths) -> bool:
-    """Check the database on startup and offer restore if it is missing or corrupt.
-
-    Returns ``True`` when startup may continue (either the database is fine,
-    or the user chose to restore from a backup).
-    """
     from PySide6.QtWidgets import QFileDialog, QMessageBox
 
     from app.services import backup_service
@@ -64,13 +49,11 @@ def _resolve_database_startup(paths: Paths) -> bool:
         return False
 
     problem = (
-        "The hotel database is missing. The application can restore it from a backup."
         if health == "missing"
         else "The hotel database appears to be damaged. The application can restore it from a backup."
     )
     answer = QMessageBox.question(
         None,
-        "Restore from Backup",
         f"{problem}\n\n"
         f"Restore the latest backup ({backups[0].name}) now?",
         QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
@@ -96,7 +79,6 @@ def _resolve_database_startup(paths: Paths) -> bool:
 
 
 def _remove_damaged_database(database_path: Path) -> None:
-    """Move a missing/corrupt database file out of the way so a fresh one is created."""
     path = Path(database_path)
     if path.exists():
         aside = path.with_name(f"{path.stem}_damaged_{datetime.now():%Y%m%d_%H%M%S}{path.suffix}")
@@ -108,7 +90,6 @@ def _remove_damaged_database(database_path: Path) -> None:
 
 
 def _restore_and_continue(paths: Paths, path: str) -> bool:
-    """Restore ``path`` at startup; returns whether startup may continue."""
     from PySide6.QtWidgets import QMessageBox
 
     from app.database.database import Database
@@ -146,11 +127,6 @@ def _restore_and_continue(paths: Paths, path: str) -> bool:
 
 
 def initialize_application() -> tuple[QApplication, Database, Paths] | None:
-    """Set up paths, logging, the database and return nothing on failure.
-
-    Returns ``None`` when database initialization fails; a user-friendly
-    error dialog is shown and technical details are written to the log.
-    """
     app = QApplication(sys.argv)
     app.setApplicationName("Nashik Comfort Stay")
 
@@ -198,7 +174,6 @@ def initialize_application() -> tuple[QApplication, Database, Paths] | None:
 
 
 def _start_auto_backup_worker(window: "MainWindow", database: Database) -> None:  # noqa: F821
-    """Kick off the lightweight background auto-backup (non-blocking)."""
     from app.ui.backup_worker import AutoBackupWorker
 
     worker = AutoBackupWorker(database, parent=window)
@@ -219,7 +194,6 @@ def _start_auto_backup_worker(window: "MainWindow", database: Database) -> None:
 
 
 def main(auto_close_ms: int | None = None) -> int:
-    """Launch the application. ``auto_close_ms`` is used by smoke tests."""
     from app.ui.main_window import MainWindow
 
     initialized = initialize_application()
