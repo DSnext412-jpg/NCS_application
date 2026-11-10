@@ -1,11 +1,3 @@
-"""Application logging setup.
-
-Logs are written to the writable log directory managed by :class:`Paths`
-(default ``<app_data>/logs/application.log``) plus the console. Re-calling
-:func:`setup_logging` with a different directory reconfigures the root
-logger so tests can safely redirect logs to a temporary location.
-"""
-
 from __future__ import annotations
 
 import logging
