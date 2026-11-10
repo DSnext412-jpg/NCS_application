@@ -1,9 +1,3 @@
-"""Generate a multi-size Windows .ico from assets/icons/hotel.svg.
-
-Renders the SVG with Qt's SVG renderer at several sizes, then packs the
-PNGs into a single .ico using Pillow. Also produces a 256px PNG preview.
-"""
-
 from __future__ import annotations
 
 import sys
