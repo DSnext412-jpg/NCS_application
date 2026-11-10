@@ -1,10 +1,3 @@
-"""Headless launch verification for the PySide6 application.
-
-Runs the real startup path against a temporary data directory, verifies
-that the main window opens with the correct title, and exits 0 on
-success. Used to confirm the application launches on Windows without a
-manual check.
-"""
 
 from __future__ import annotations
 
