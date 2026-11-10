@@ -1,13 +1,3 @@
-"""Lightweight, idempotent schema migrations for the local SQLite database.
-
-Phase 1 databases were created without ``created_at``/``updated_at`` on
-the ``rooms`` table. Instead of recreating the database, missing columns
-are added with ``ALTER TABLE`` and new tables (e.g.
-``room_status_history``) are created via ``Base.metadata.create_all``.
-
-Every migration here must be safe to run repeatedly.
-"""
-
 from __future__ import annotations
 
 from sqlalchemy import inspect, text
@@ -17,7 +7,6 @@ from app.database.base import Base
 
 
 def run_schema_migrations(engine: Engine) -> None:
-    """Apply any pending schema changes and create missing tables."""
     inspector = inspect(engine)
     tables = set(inspector.get_table_names())
 
@@ -32,7 +21,6 @@ def run_schema_migrations(engine: Engine) -> None:
             with engine.begin() as connection:
                 for statement in statements:
                     connection.execute(text(statement))
-                # Backfill timestamps for pre-existing room rows.
                 connection.execute(
                     text(
                         "UPDATE rooms SET created_at = CURRENT_TIMESTAMP, "
@@ -40,7 +28,6 @@ def run_schema_migrations(engine: Engine) -> None:
                     )
                 )
 
-    # Phase 4: bookings gained a discount column. Safe to run repeatedly.
     if "bookings" in tables:
         columns = {column["name"] for column in inspector.get_columns("bookings")}
         if "discount" not in columns:
@@ -62,10 +49,6 @@ def run_schema_migrations(engine: Engine) -> None:
             with engine.begin() as connection:
                 connection.execute(text("ALTER TABLE bookings ADD COLUMN paid_online BOOLEAN DEFAULT 0"))
 
-        # Rebuild the table once when guest_id is still NOT NULL. Deleting a
-        # guest whose last booking was soft-deleted requires a booking row to
-        # be able to drop its guest reference (guest_id NULL). SQLite cannot
-        # ALTER a column's nullability, so the table is rebuilt when needed.
         guest_id_column = next((c for c in inspector.get_columns("bookings") if c["name"] == "guest_id"), None)
         if guest_id_column is not None and not guest_id_column.get("nullable", True):
             raw = engine.raw_connection()
@@ -111,23 +94,10 @@ def run_schema_migrations(engine: Engine) -> None:
                 )
                 cursor.execute(
                     """
-                    INSERT INTO bookings_new (
-                        id, booking_number, guest_id, room_id, booking_source_id,
-                        check_in_date, check_in_time, check_out_date, check_out_time,
-                        adults, children, room_rate, extra_person_charge,
-                        early_check_in_charge, late_check_out_charge, discount,
-                        paid_online, special_notes, status, actual_check_out_at, cancelled_at,
-                        cancellation_reason, cancelled_by, no_show_at, no_show_reason,
-                        deleted_at, deleted_by, deletion_reason, created_at, updated_at
-                    )
-                    SELECT
-                        id, booking_number, guest_id, room_id, booking_source_id,
-                        check_in_date, check_in_time, check_out_date, check_out_time,
-                        adults, children, room_rate, extra_person_charge,
-                        early_check_in_charge, late_check_out_charge, discount,
-                        paid_online, special_notes, status, actual_check_out_at, cancelled_at,
-                        cancellation_reason, cancelled_by, no_show_at, no_show_reason,
-                        deleted_at, deleted_by, deletion_reason, created_at, updated_at
+                    INSERT INTO bookings_new(id, booking_number, guest_id, room_id, booking_source_id,check_in_date, check_in_time, check_out_date, check_out_time,adults, children, room_rate, extra_person_charge,early_check_in_charge, late_check_out_charge, discount,paid_online, special_notes, status, actual_check_out_at, cancelled_at,cancellation_reason, cancelled_by, no_show_at, no_show_reason,deleted_at, deleted_by, deletion_reason, created_at, updated_at)
+                    SELEC id, booking_number, guest_id, room_id, booking_source_id,check_in_date, check_in_time, check_out_date, check_out_time,adults, children, room_rate, extra_person_charge,
+                        early_check_in_charge, late_check_out_charge, discount,paid_online, special_notes, status, actual_check_out_at, cancelled_at,
+                        cancellation_reason, cancelled_by, no_show_at, no_show_reason,deleted_at, deleted_by, deletion_reason, created_at, updated_at
                     FROM bookings
                     """
                 )
@@ -149,9 +119,6 @@ def run_schema_migrations(engine: Engine) -> None:
                 raw.commit()
             finally:
                 raw.close()
-
-    # Phase 7: index payments by status for the payments page. Safe to
-    # run repeatedly because SQLite CREATE INDEX IF NOT EXISTS is idempotent.
     if "payments" in tables:
         with engine.begin() as connection:
             connection.execute(
@@ -167,5 +134,4 @@ def run_schema_migrations(engine: Engine) -> None:
                 )
             )
 
-    # Create any tables that do not exist yet (room_status_history, ...).
     Base.metadata.create_all(engine)
