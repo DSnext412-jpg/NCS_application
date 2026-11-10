@@ -1,9 +1,3 @@
-"""Static configuration values and default seed data.
-
-These defaults are copied into the SQLite database on first run so they
-can later be changed from the Admin Settings screen without editing code.
-"""
-
 from __future__ import annotations
 
 from typing import Any
@@ -21,7 +15,6 @@ from app.core.constants import (
     RoomType,
 )
 
-# Setting keys
 KEY_HOTEL_NAME = "hotel_name"
 KEY_HOTEL_DESCRIPTION = "hotel_description"
 KEY_HOTEL_ADDRESS = "hotel_address"
@@ -40,23 +33,18 @@ KEY_LATE_CHECKOUT_GRACE_HOURS = "late_checkout_grace_hours"
 DEFAULT_LATE_CHECKOUT_CHARGE = "300"
 DEFAULT_LATE_CHECKOUT_GRACE_HOURS = "4"
 
-# Admin security / settings keys. The admin password is stored ONLY as a
-# salted hash (see app.services.security_service); it is never plain text.
 KEY_ADMIN_PASSWORD_HASH = "admin_password_hash"
 KEY_ADMIN_PASSWORD_SET = "admin_password_set"
 KEY_ADMIN_SESSION_TIMEOUT_MINUTES = "admin_session_timeout_minutes"
 KEY_ADMIN_FAILED_ATTEMPTS = "admin_failed_attempts"
 KEY_ADMIN_LOCKED_UNTIL = "admin_locked_until"
 
-# Backup / data-safety settings (Phase 8). The backup location defaults to
-# the user's Documents folder and is overridable by Admin; it is never the
-# application installation directory.
 KEY_BACKUP_LOCATION = "backup_location"
 KEY_BACKUP_AUTO_ENABLED = "backup_auto_enabled"
-KEY_BACKUP_FREQUENCY = "backup_frequency"          # daily / weekly
-KEY_BACKUP_TIME = "backup_time"                    # "HH:MM"
-KEY_BACKUP_RETENTION = "backup_retention_count"    # newest N backups kept
-KEY_BACKUP_LAST_SUCCESS = "backup_last_success_at"  # ISO timestamp
+KEY_BACKUP_FREQUENCY = "backup_frequency"       
+KEY_BACKUP_TIME = "backup_time"                  
+KEY_BACKUP_RETENTION = "backup_retention_count"   
+KEY_BACKUP_LAST_SUCCESS = "backup_last_success_at"  
 
 DEFAULT_BACKUP_LOCATION = ""
 DEFAULT_BACKUP_AUTO_ENABLED = "true"
@@ -68,8 +56,6 @@ DEFAULT_ADMIN_SESSION_TIMEOUT_MINUTES = 15
 ADMIN_MAX_FAILED_ATTEMPTS = 5
 ADMIN_LOCKOUT_SECONDS = 30
 
-# GST is currently disabled for this property. It must only be enabled
-# explicitly from Admin Settings in a future phase.
 DEFAULT_HOTEL_SETTINGS: dict[str, str] = {
     KEY_HOTEL_NAME: APP_NAME,
     KEY_HOTEL_DESCRIPTION: HOTEL_DESCRIPTION,
@@ -97,12 +83,6 @@ DEFAULT_HOTEL_SETTINGS: dict[str, str] = {
     KEY_BACKUP_LAST_SUCCESS: "",
 }
 
-# The 11 standard rooms. Pricing is intentionally NOT part of room
-# configuration -- room rates and extra-person charges are entered
-# manually by reception staff at booking time (future phase).
-#
-# A 12th guest/property room exists but is intentionally not defined
-# here; its number, type and details are configurable later by Admin.
 DEFAULT_ROOMS: list[dict[str, Any]] = [
     {"room_number": "202", "room_type": RoomType.AC.value},
     {"room_number": "203", "room_type": RoomType.AC.value},
