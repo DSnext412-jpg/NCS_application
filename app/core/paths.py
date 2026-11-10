@@ -1,16 +1,3 @@
-"""Centralized path management.
-
-Every writable path the application touches must be resolved through
-:class:`Paths`. No module should hard-code a filesystem location.
-
-Resolution rules:
-* ``NCS_APP_DATA`` environment variable overrides the application data
-  directory (used by tests and packaged smoke runs).
-* In a packaged (PyInstaller) build the data lives in
-  ``%LOCALAPPDATA%\\NashikComfortStay\\``.
-* In development mode data lives at the project root so it stays close
-  to the source tree.
-"""
 
 from __future__ import annotations
 
@@ -26,8 +13,6 @@ def is_frozen() -> bool:
 
 
 class Paths:
-    """Resolves all application paths from a single root."""
-
     def __init__(self, project_root: str | os.PathLike[str] | None = None) -> None:
         if project_root is not None:
             self.project_root = Path(project_root).resolve()
@@ -37,8 +22,6 @@ class Paths:
             self.project_root = Path(__file__).resolve().parent.parent.parent
 
         self.app_data_dir = self._resolve_app_data_dir()
-
-    # -- directory resolution -------------------------------------------------
 
     def _resolve_app_data_dir(self) -> Path:
         override = os.environ.get("NCS_APP_DATA")
@@ -52,7 +35,6 @@ class Paths:
         return self.project_root
 
     def ensure_directories(self) -> None:
-        """Create every writable directory used by the application."""
         for name in (
             "data",
             "backups",
@@ -62,8 +44,6 @@ class Paths:
             "assets",
         ):
             (self.app_data_dir / name).mkdir(parents=True, exist_ok=True)
-
-    # -- writable data directories ---------------------------------------------
 
     @property
     def data_dir(self) -> Path:
@@ -97,11 +77,9 @@ class Paths:
     def log_file(self) -> Path:
         return self.logs_dir / "application.log"
 
-    # -- read-only bundled assets ----------------------------------------------
 
     @property
     def source_assets_dir(self) -> Path:
-        """Assets shipped with the application (icons/images)."""
         if is_frozen():
             base = Path(getattr(sys, "_MEIPASS", self.project_root))
             return base / "assets"
