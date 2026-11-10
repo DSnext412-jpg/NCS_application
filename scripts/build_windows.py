@@ -1,27 +1,3 @@
-"""Reproducible Windows release build for Nashik Comfort Stay.
-
-This script:
-
-1. Verifies the environment (venv python, PyInstaller installed).
-2. Runs the full test suite (``pytest``).
-3. Runs the headless smoke test.
-4. Builds the one-file windowed EXE with PyInstaller.
-5. Copies the final EXE (and README) into ``release/``.
-6. Prints clear success/failure information.
-
-Safety rules honoured:
-* NEVER deletes or modifies production data.
-* NEVER touches ``%LOCALAPPDATA%\\NashikComfortStay\\`` (the packaged app's
-  writable data directory).
-* Only build/working artifacts under ``build/`` and ``dist/`` are cleaned.
-
-Run with::
-
-    python scripts/build_windows.py
-
-Exit codes: 0 = success, 1 = any failure.
-"""
-
 from __future__ import annotations
 
 import shutil
