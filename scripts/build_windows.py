@@ -39,7 +39,6 @@ BUILD_DIR = ROOT / "build"
 
 EXE_NAME = "NashikComfortStay.exe"
 
-# Never these directories anywhere in the process.
 _FORBIDDEN = ("LocalAppData",)
 
 
@@ -70,7 +69,6 @@ def main() -> int:
     if not PYTHON.exists():
         return _fail("Virtual environment python not found. Run: python -m venv .venv")
 
-    # 1. Environment check ---------------------------------------------------
     check = subprocess.run(
         [str(PYTHON), "-c", "import PyInstaller; print(PyInstaller.__version__)"],
         cwd=ROOT, capture_output=True, text=True,
@@ -82,15 +80,12 @@ def main() -> int:
         )
     print(f"PyInstaller version: {check.stdout.strip()}")
 
-    # 2. Tests ---------------------------------------------------------------
     if not _run([str(PYTHON), "-m", "pytest", "-q"], ROOT, "Running test suite"):
         return _fail("Test suite did not pass — release build aborted.")
 
-    # 3. Smoke test ----------------------------------------------------------
     if not _run([str(PYTHON), "scripts/smoke_run.py"], ROOT, "Running smoke test"):
         return _fail("Smoke test did not pass — release build aborted.")
 
-    # 4. Clean previous build artifacts (NEVER touches production data) ------
     print("\n=== Cleaning previous build artifacts ===")
     for folder in (DIST_DIR, BUILD_DIR):
         if folder.exists():
@@ -101,7 +96,6 @@ def main() -> int:
         stale_exe.unlink()
         print(f"    removed {stale_exe}")
 
-    # 5. PyInstaller build ---------------------------------------------------
     if not _run(
         [str(PYTHON), "-m", "PyInstaller", "--clean", "--noconfirm", "--distpath", str(DIST_DIR), "--workpath", str(BUILD_DIR), str(SPEC_FILE)],
         ROOT, "Building one-file EXE",
@@ -112,7 +106,6 @@ def main() -> int:
     if not built_exe.exists():
         return _fail(f"Expected EXE not produced: {built_exe}")
 
-    # 6. Assemble release directory -----------------------------------------
     print("\n=== Assembling release directory ===")
     RELEASE_DIR.mkdir(parents=True, exist_ok=True)
     shutil.copy2(built_exe, RELEASE_DIR / EXE_NAME)
@@ -121,7 +114,6 @@ def main() -> int:
     size_bytes = (RELEASE_DIR / EXE_NAME).stat().st_size
     print(f"    {RELEASE_DIR / EXE_NAME}  ({size_bytes / 1_000_000:.1f} MB)")
 
-    # 7. Summary -------------------------------------------------------------
     print("\n" + "=" * 60)
     print("RELEASE BUILD COMPLETE")
     print(f"  EXE : {RELEASE_DIR / EXE_NAME}")
