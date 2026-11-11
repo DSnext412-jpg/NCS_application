@@ -1,15 +1,3 @@
-"""Financial service.
-
-Computes the complete financial picture of a booking: derived base
-charges (from booking columns), manual charges (from the charges
-table), discount, GST (currently always 0 — GST is disabled), payments
-and the remaining balance. Also handles recording/reversing payments,
-adding/removing manual charges, and today's collected total.
-
-All money values are ``Decimal``; the UI formats them with Indian
-number grouping.
-"""
-
 from __future__ import annotations
 
 import logging
@@ -36,8 +24,6 @@ logger = logging.getLogger(__name__)
 
 GST_RATE = to_decimal("0.18")
 
-# Manual charge types stored in the charges table (base charges live on
-# the booking itself).
 MANUAL_CHARGE_TYPES = (
     ChargeType.ROOM,
     ChargeType.EXTRA_MATTRESS,
@@ -47,20 +33,12 @@ MANUAL_CHARGE_TYPES = (
 
 
 class FinancialError(Exception):
-    """Base exception for financial domain errors."""
-
 
 class OverPaymentError(FinancialError):
-    """Raised when a payment exceeds the remaining balance."""
-
 
 class ChargeValidationError(FinancialError):
-    """Raised when a manual charge is invalid."""
-
 
 class PaymentValidationError(FinancialError):
-    """Raised when a payment record is invalid."""
-
 
 def _get_booking_or_raise(session: Session, booking_id: int) -> Booking:
     booking = session.get(Booking, booking_id)
@@ -68,29 +46,13 @@ def _get_booking_or_raise(session: Session, booking_id: int) -> Booking:
         raise FinancialError(f"Booking {booking_id!r} not found")
     return booking
 
-
-# ---------------------------------------------------------------------------
-# Derived charges
-# ---------------------------------------------------------------------------
-
 def calculate_nights(check_in_date: date, check_out_date: date) -> int:
-    """Number of billable nights.
-
-    A same-day stay returns 0 — reception confirms the stay amount as a
-    manual ROOM charge instead.
-    """
     return max(0, (check_out_date - check_in_date).days)
 
 
 def calculate_room_charge(booking: Booking) -> Any:
-    """Derived room charge: room_rate × nights."""
     nights = calculate_nights(booking.check_in_date, booking.check_out_date)
     return (to_decimal(booking.room_rate) * nights).quantize(to_decimal("0.01"))
-
-
-# ---------------------------------------------------------------------------
-# Financial summary
-# ---------------------------------------------------------------------------
 
 @dataclass(frozen=True)
 class FinancialSummary:
@@ -98,19 +60,19 @@ class FinancialSummary:
 
     booking_id: int
     nights: int
-    room_charges: Any          # Decimal
-    extra_person_charges: Any  # Decimal
+    room_charges: Any          
+    extra_person_charges: Any 
     early_check_in_charges: Any
     late_check_out_charges: Any
     mattress_charges: Any
     miscellaneous_charges: Any
     other_charges: Any
-    manual_charges: Any        # total of all charges-table rows
+    manual_charges: Any       
     subtotal: Any
     discount: Any
     gst: Any
     grand_total: Any
-    total_paid: Any            # sum of completed (non-reversed) payments
+    total_paid: Any            
     remaining: Any
     payment_status: PaymentStatus
 
@@ -134,20 +96,16 @@ def _manual_charge_total(session: Session, booking_id: int) -> tuple[dict[Charge
 
 
 def get_financial_summary(session: Session, booking_id: int) -> FinancialSummary:
-    """Compute every financial figure for a booking."""
     booking = _get_booking_or_raise(session, booking_id)
 
     nights = calculate_nights(booking.check_in_date, booking.check_out_date)
 
-    # Base charges derived from booking columns (authoritative).
     room_charges = calculate_room_charge(booking)
     extra_person = to_decimal(booking.extra_person_charge)
     early = to_decimal(booking.early_check_in_charge)
     late = to_decimal(booking.late_check_out_charge)
 
-    # Manual charges from the charges table.
     manual_by_type, manual_total = _manual_charge_total(session, booking_id)
-    # Manual ROOM-type charges are additional to the derived room charge.
     room_charges = add(room_charges, manual_by_type.get(ChargeType.ROOM, 0))
     mattress = manual_by_type.get(ChargeType.EXTRA_MATTRESS, to_decimal(0))
     miscellaneous = manual_by_type.get(ChargeType.MISCELLANEOUS, to_decimal(0))
@@ -156,7 +114,6 @@ def get_financial_summary(session: Session, booking_id: int) -> FinancialSummary
     subtotal = add(room_charges, extra_person, early, late, mattress, miscellaneous, other)
     discount = to_decimal(booking.discount)
 
-    # GST is disabled for this property; kept future-proof with a helper.
     gst_enabled = settings_service.get_bool_setting(session, KEY_GST_ENABLED, default=False)
     gst_base = max(to_decimal(0), subtotal - discount)
     gst = (gst_base * GST_RATE).quantize(to_decimal("0.01")) if gst_enabled else to_decimal(0)
@@ -281,7 +238,6 @@ def remove_charge(session: Session, charge_id: int) -> None:
 
 
 def set_discount(session: Session, booking_id: int, discount: Any) -> Booking:
-    """Set the booking discount (0 ≤ discount ≤ subtotal)."""
     booking = _get_booking_or_raise(session, booking_id)
     summary = get_financial_summary(session, booking_id)
     amount = to_decimal(discount)
@@ -296,11 +252,6 @@ def set_discount(session: Session, booking_id: int, discount: Any) -> Booking:
     session.refresh(booking)
     logger.info("Discount ₹%s set on booking %s", amount, booking.booking_number)
     return booking
-
-
-# ---------------------------------------------------------------------------
-# Payments
-# ---------------------------------------------------------------------------
 
 def _normalize_method(value: str | PaymentMethod) -> PaymentMethod:
     if isinstance(value, PaymentMethod):
@@ -426,7 +377,6 @@ def list_payments(
     date_to: date | None = None,
     limit: int = 500,
 ) -> list[Payment]:
-    """Filterable payment history for the Payments page."""
     query_builder = (
         session.query(Payment)
         .options(
@@ -467,7 +417,6 @@ def get_payment_period_total(
     date_from: date | None = None,
     date_to: date | None = None,
 ) -> Any:
-    """Total completed payments within a date range (inclusive)."""
     query = (
         session.query(Payment)
         .join(Booking, Payment.booking_id == Booking.id)
