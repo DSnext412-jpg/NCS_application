@@ -1,39 +1,3 @@
-"""Backup, restore and data-safety service (Phase 8).
-
-Backup package (``.ncsbackup``) is a ZIP archive containing:
-
-* ``hotel.db`` — a consistent SQLite snapshot created with SQLite's online
-  backup API (``sqlite3.Connection.backup``), NOT a raw file copy, so the
-  archive is valid even while the application is writing.
-* ``metadata.json`` — application name, backup format version, creation
-  timestamp, schema version, application version, SHA-256 checksum of the
-  database, record counts and file inventory. Passwords / authentication
-  secrets are never written into metadata.
-* ``invoices/*.pdf`` — historical invoice PDFs (kept with the backup so a
-  restore never silently loses printed invoices).
-* ``assets/`` — the Admin-uploaded hotel logo (if configured).
-
-Restore is designed to be extremely safe:
-
-1. validate the selected package (exists, readable, ZIP opens, embedded
-   database passes ``PRAGMA integrity_check`` and contains the required
-   tables, schema version not newer than the application),
-2. create a ``PreRestore`` safety backup of the current database,
-3. dispose all open connections,
-4. extract + validate the database in a temp file inside the data folder,
-5. atomically replace the production database (``os.replace``),
-6. reopen, re-run integrity checks and restore invoice PDFs + logo.
-
-If any step fails after the safety backup exists, the previous database is
-restored from the safety backup. Backups are NOT encrypted — the metadata
-explicitly states ``"encrypted": false``.
-
-Backup history is stored in the application database (``backup_history``)
-for Admin review, but the restore system NEVER depends on it: restoring
-reads only the ``.ncsbackup`` file, so a damaged or missing main database
-can always be recovered from a backup file.
-"""
-
 from __future__ import annotations
 
 import json
@@ -66,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 BACKUP_EXTENSION = ".ncsbackup"
 BACKUP_VERSION = 1
-SCHEMA_VERSION = 8  # phase 8; bumps when the schema changes
+SCHEMA_VERSION = 8 
 APP_SCHEMA_VERSION = SCHEMA_VERSION
 
 DEFAULT_RETENTION = 30
@@ -97,24 +61,12 @@ REQUIRED_TABLES = (
 
 
 class BackupError(Exception):
-    """Base error for backup operations."""
-
 
 class BackupVerificationError(BackupError):
-    """Raised when a created/selected backup fails verification."""
-
 
 class RestoreError(BackupError):
-    """Raised when a restore cannot be applied."""
-
 
 class IncompatibleBackupError(RestoreError):
-    """Raised when the backup is newer than the application can restore."""
-
-
-# ---------------------------------------------------------------------------
-# Data model
-# ---------------------------------------------------------------------------
 
 @dataclass
 class BackupResult:
@@ -129,7 +81,7 @@ class BackupResult:
 @dataclass
 class BackupVerification:
     ok: bool
-    file_path: Path = None  # type: ignore[assignment]
+    file_path: Path = None 
     exists: bool = False
     readable: bool = False
     zip_ok: bool = False
@@ -146,8 +98,8 @@ class BackupVerification:
 class RestoreResult:
     ok: bool
     message: str = ""
-    database_path: Path = None  # type: ignore[assignment]
-    backup_file: Path = None  # type: ignore[assignment]
+    database_path: Path = None  
+    backup_file: Path = None  
     safety_backup: Path | None = None
     recovered: bool = False
     restored_at: datetime = field(default_factory=datetime.now)
@@ -167,12 +119,7 @@ class BackupRecord:
     location: str
 
 
-# ---------------------------------------------------------------------------
-# Paths & configuration
-# ---------------------------------------------------------------------------
-
 def default_backup_location() -> Path:
-    """Default backup folder: ``Documents\\Nashik Comfort Stay\\Backups``."""
     try:
         documents = Path.home() / "Documents"
     except RuntimeError:
@@ -180,17 +127,15 @@ def default_backup_location() -> Path:
     return documents / "Nashik Comfort Stay" / "Backups"
 
 
-def get_backup_location(database) -> Path:  # noqa: ANN001
-    """Configured backup folder, falling back to the Documents default."""
+def get_backup_location(database) -> Path:  
     return _resolve_location(_read_setting(database, KEY_BACKUP_LOCATION, ""))
 
 
 def _read_setting(database, key: str, default: str) -> str:  # noqa: ANN001
-    """Read a settings key, returning ``default`` when the DB is missing/corrupt."""
     try:
         with database.session_scope() as session:
             return settings_service.get_setting(session, key, default=default) or default
-    except Exception:  # noqa: BLE001 - a damaged DB must not block backup/restore
+    except Exception: 
         return default
 
 
@@ -217,12 +162,7 @@ def _unique_target(folder: Path, name: str) -> Path:
     return candidate
 
 
-# ---------------------------------------------------------------------------
-# SQLite helpers
-# ---------------------------------------------------------------------------
-
 def _online_backup(source_db: Path, target_db: Path) -> None:
-    """Create a consistent SQLite snapshot using the online backup API."""
     source = sqlite3.connect(str(source_db))
     try:
         target = sqlite3.connect(str(target_db))
@@ -235,7 +175,6 @@ def _online_backup(source_db: Path, target_db: Path) -> None:
 
 
 def _integrity_check(db_path: Path) -> tuple[bool, str]:
-    """Run ``PRAGMA integrity_check`` on a SQLite file."""
     connection = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     try:
         row = connection.execute("PRAGMA integrity_check").fetchone()
@@ -292,11 +231,6 @@ def database_health(database_path: Path) -> str:
     except sqlite3.Error:
         return "corrupt"
 
-
-# ---------------------------------------------------------------------------
-# Package building
-# ---------------------------------------------------------------------------
-
 def _build_metadata(
     *,
     db_path: Path,
@@ -328,7 +262,6 @@ def _build_metadata(
 
 def _write_package(destination: Path, db_path: Path, metadata: dict[str, Any],
                    invoice_files: list[Path], logo_file: Path | None) -> Path:
-    """Assemble the ``.ncsbackup`` ZIP archive at ``destination``."""
     with zipfile.ZipFile(str(destination), "w", compression=zipfile.ZIP_DEFLATED) as archive:
         archive.write(db_path, PACKAGE_DB_NAME)
         archive.writestr(PACKAGE_METADATA_NAME, json.dumps(metadata, indent=2, ensure_ascii=False))
@@ -340,7 +273,6 @@ def _write_package(destination: Path, db_path: Path, metadata: dict[str, Any],
 
 
 def _gather_persistent_files(database) -> tuple[list[Path], Path | None]:  # noqa: ANN001
-    """Invoice PDFs (from ``invoices/``) and the configured logo, if present."""
     paths = Paths()
     invoice_files: list[Path] = []
     invoices_dir = paths.invoices_dir
@@ -362,7 +294,6 @@ def _check_disk_space(destination_dir: Path, required_bytes: int) -> None:
 
 
 def _prepare_source_snapshot(database, destination_dir: Path) -> Path:  # noqa: ANN001
-    """Create a verified temp snapshot of the production DB, or raise."""
     database_path = Path(database.database_path)
     if not database_path.exists():
         raise BackupError("The hotel database was not found. Cannot create a backup.")
@@ -406,11 +337,6 @@ def _record_history(database, *, file_path: Path, status: str, verification: str
                 session, KEY_BACKUP_LAST_SUCCESS, datetime.now().isoformat(timespec="seconds")
             )
 
-
-# ---------------------------------------------------------------------------
-# Backup creation
-# ---------------------------------------------------------------------------
-
 def create_backup(
     database,
     *,
@@ -418,10 +344,6 @@ def create_backup(
     reason: str = "manual",
     audit: bool = True,
 ) -> BackupResult:
-    """Create, verify and record a backup. Raises :class:`BackupError` on failure.
-
-    ``reason`` is one of ``manual`` / ``automatic`` / ``pre-restore``.
-    """
     logger.info("Backup started (reason=%s)", reason)
     database_path = Path(database.database_path)
     if not database_path.exists():
@@ -473,14 +395,7 @@ def create_backup(
         ok=True, file_path=target, message="Backup created successfully.",
         size_bytes=target.stat().st_size, checksum=checksum, timestamp=datetime.now(),
     )
-
-
-# ---------------------------------------------------------------------------
-# Verification
-# ---------------------------------------------------------------------------
-
 def verify_backup_file(backup_file: str | Path) -> BackupVerification:
-    """Thoroughly validate a ``.ncsbackup`` package file."""
     path = Path(backup_file)
     result = BackupVerification(ok=False, file_path=path)
     if not path.exists():
@@ -538,17 +453,7 @@ def verify_backup_file(backup_file: str | Path) -> BackupVerification:
     result.ok = True
     return result
 
-
-# ---------------------------------------------------------------------------
-# Backup history
-# ---------------------------------------------------------------------------
-
 def get_backup_history(database, limit: int = 200) -> list[BackupRecord]:  # noqa: ANN001
-    """Recent backup history records, newest first.
-
-    Returns ``[]`` when the database is missing or damaged — reading the
-    history must never block a restore of a recovered file.
-    """
     try:
         with database.session_scope() as session:
             rows = (
@@ -572,7 +477,7 @@ def get_backup_history(database, limit: int = 200) -> list[BackupRecord]:  # noq
                 )
                 for row in rows
             ]
-    except Exception:  # noqa: BLE001 - history is non-critical for restore
+    except Exception: 
         return []
 
 
@@ -604,10 +509,6 @@ def list_backup_files(location: str | Path | None = None) -> list[Path]:
     return sorted(files, key=lambda p: (p.stat().st_mtime, p.name), reverse=True)
 
 
-# ---------------------------------------------------------------------------
-# Retention
-# ---------------------------------------------------------------------------
-
 def _apply_retention(database, location: Path | None = None) -> int:  # noqa: ANN001
     """Delete the oldest application-owned backups beyond the retention count."""
     retention = _read_setting(database, KEY_BACKUP_RETENTION, str(DEFAULT_RETENTION))
@@ -632,10 +533,6 @@ def _apply_retention(database, location: Path | None = None) -> int:  # noqa: AN
     return removed
 
 
-# ---------------------------------------------------------------------------
-# Automatic backups
-# ---------------------------------------------------------------------------
-
 def get_auto_backup_config(database) -> dict[str, Any]:  # noqa: ANN001
     with database.session_scope() as session:
         enabled = settings_service.get_bool_setting(session, KEY_BACKUP_AUTO_ENABLED, default=True)
@@ -656,7 +553,6 @@ def get_auto_backup_config(database) -> dict[str, Any]:  # noqa: ANN001
 
 
 def is_auto_backup_due(database) -> bool:  # noqa: ANN001
-    """Whether an automatic backup is due (checked at startup / intervals)."""
     config = get_auto_backup_config(database)
     if not config["enabled"]:
         return False
@@ -672,7 +568,6 @@ def is_auto_backup_due(database) -> bool:  # noqa: ANN001
 
 
 def run_auto_backup(database) -> BackupResult | None:  # noqa: ANN001
-    """Run the automatic backup when due; otherwise do nothing."""
     if not is_auto_backup_due(database):
         return None
     logger.info("Automatic backup triggered")
@@ -721,10 +616,6 @@ def set_backup_location(database, location: str | Path, *, audit: bool = True) -
     return folder
 
 
-# ---------------------------------------------------------------------------
-# Restore
-# ---------------------------------------------------------------------------
-
 def _extract_database(archive: zipfile.ZipFile, target: Path) -> None:
     with archive.open(PACKAGE_DB_NAME) as source, target.open("wb") as destination:
         shutil.copyfileobj(source, destination)
@@ -746,11 +637,6 @@ def _restore_files(archive: zipfile.ZipFile) -> None:
 
 
 def _repair_logo_and_invoices(database, logo_files: list[str]) -> None:  # noqa: ANN001
-    """Re-point the logo setting and invoice PDF paths after a restore.
-
-    Absolute paths stored in the old database (from another machine or a
-    previous data directory) are rewritten to the restored files.
-    """
     paths = Paths()
     if logo_files:
         logo_name = logo_files[0]
@@ -771,12 +657,6 @@ def _repair_logo_and_invoices(database, logo_files: list[str]) -> None:  # noqa:
 
 
 def restore_backup(database, backup_file: str | Path, *, audit: bool = True) -> RestoreResult:
-    """Safely restore a ``.ncsbackup`` package. See module docstring.
-
-    The current database is first preserved as a ``PreRestore`` safety
-    backup. On failure after that point, the previous database is restored
-    from the safety backup and ``recovered`` is set.
-    """
     backup_path = Path(backup_file)
     logger.info("Restore started: %s", backup_path)
 
@@ -795,7 +675,6 @@ def restore_backup(database, backup_file: str | Path, *, audit: bool = True) -> 
     data_dir = database_path.parent
     data_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Safety backup of the current database (best effort, never skipped).
     safety = None
     try:
         safety_result = create_backup(
@@ -807,7 +686,6 @@ def restore_backup(database, backup_file: str | Path, *, audit: bool = True) -> 
         logger.warning("Pre-restore safety backup failed: %s", exc)
         safety = None
 
-    # 2. Close all open SQLite connections before touching the file.
     from app.database.database import dispose_all_databases
 
     dispose_all_databases()
@@ -829,13 +707,10 @@ def restore_backup(database, backup_file: str | Path, *, audit: bool = True) -> 
                     f"({', '.join(sorted(missing))}). Restore was not performed."
                 )
 
-            # 3. Atomic replacement (same filesystem: temp sits inside data_dir).
             os.replace(temp_db, database_path)
 
-            # 4. Restore persistent files.
             _, logo_files = _restore_files(archive)
 
-        # 5. Reopen + verify the restored database.
         database.create_all()
         restored_health = database_health(database_path)
         if restored_health != "healthy":
@@ -845,7 +720,7 @@ def restore_backup(database, backup_file: str | Path, *, audit: bool = True) -> 
             raise RestoreError("The restored database is missing required tables.")
         _repair_logo_and_invoices(database, logo_files)
 
-    except BaseException as exc:  # noqa: BLE001 - recovery must run on any failure
+    except BaseException as exc: 
         logger.exception("Restore failed; attempting recovery from safety backup")
         recovery_message = ""
         if safety is not None and safety.exists():
@@ -860,7 +735,7 @@ def restore_backup(database, backup_file: str | Path, *, audit: bool = True) -> 
                         recovery_message = " Your previous data was restored from the safety backup."
                     else:
                         recovery_message = " The safety backup could not be validated."
-            except BaseException:  # noqa: BLE001
+            except BaseException: 
                 logger.exception("Recovery from safety backup also failed")
                 recovery_message = " The safety backup could not be restored. Keep it for manual recovery."
         raise RestoreError(
@@ -888,10 +763,6 @@ def restore_backup(database, backup_file: str | Path, *, audit: bool = True) -> 
         restored_at=datetime.now(),
     )
 
-
-# ---------------------------------------------------------------------------
-# Deletion (Admin only)
-# ---------------------------------------------------------------------------
 
 def delete_backup_file(backup_file: str | Path, *, audit: bool = True) -> bool:
     """Delete an application-owned backup file if it exists. Never deletes arbitrary files."""
