@@ -1,9 +1,3 @@
-"""Guest service.
-
-All guest business logic lives here. Guests are never deleted when a
-booking is cancelled; relationships keep history intact.
-"""
-
 from __future__ import annotations
 
 import logging
@@ -22,13 +16,7 @@ _SEARCH_LIMIT = 100
 
 
 class GuestError(Exception):
-    """Base exception for guest domain errors."""
-
-
 class GuestValidationError(GuestError):
-    """Raised when required guest fields are missing/invalid."""
-
-
 def _require(value: str | None, field_label: str) -> str:
     text = (value or "").strip()
     if not text:
