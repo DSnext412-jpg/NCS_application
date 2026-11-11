@@ -1,15 +1,3 @@
-"""Invoice service.
-
-Produces and manages invoice documents from bookings.
-
-An invoice freezes the information it was created with into a JSON
-snapshot (``snapshot_json``). Once an invoice is ``FINALIZED`` it is
-immutable: reprints and PDF regeneration read only the snapshot, so later
-edits to the guest record or the booking never silently change an issued
-invoice. GST is disabled for this property, so no GST figures are ever
-printed or stored as payable amounts.
-"""
-
 from __future__ import annotations
 
 import json
@@ -54,10 +42,7 @@ logger = logging.getLogger(__name__)
 
 SNAPSHOT_VERSION = 1
 
-# Manual charge types that the financial summary actually counts. Manual
-# rows of any other type are not part of the financial totals and are
-# therefore excluded from the printed line items so the invoice always
-# reconciles with the booking's financial summary.
+
 _COUNTED_MANUAL_TYPES = (
     ChargeType.ROOM,
     ChargeType.EXTRA_MATTRESS,
@@ -67,27 +52,17 @@ _COUNTED_MANUAL_TYPES = (
 
 
 class InvoiceError(Exception):
-    """Base exception for invoice domain errors."""
 
 
 class InvoiceStateError(InvoiceError):
-    """Raised when an action is not valid for the booking/invoice state."""
 
 
 class DuplicateFinalizedInvoiceError(InvoiceError):
-    """Raised when a finalized invoice already exists for a booking.
-
-    ``invoice`` carries the existing finalized invoice.
-    """
-
+ 
     def __init__(self, message: str, *, invoice: Invoice) -> None:
         super().__init__(message)
         self.invoice = invoice
 
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 
 def _get_invoice_or_raise(session: Session, invoice_id: int) -> Invoice:
     invoice = session.get(Invoice, invoice_id)
@@ -136,7 +111,6 @@ def _guest_address(guest) -> str:  # noqa: ANN001
 
 
 def _wrap_address(address: str, max_len: int = 42) -> list[str]:
-    """Wrap a comma-separated address into readable lines."""
     parts = [part.strip() for part in (address or "").split(",") if part and part.strip()]
     lines: list[str] = []
     current = ""
@@ -168,17 +142,8 @@ def _format_stay_date_time(iso_date: str, iso_time: str) -> str:
     return format_date_time(day, time_value)
 
 
-# ---------------------------------------------------------------------------
-# Invoice number
-# ---------------------------------------------------------------------------
-
 def generate_invoice_number(session: Session, year: int | None = None) -> str:
-    """Generate the next unique invoice number: NCS-INV-2026-000001.
 
-    The sequence is derived from the highest existing number in the
-    database, so it is unique, sequential, survives restarts and is never
-    reused. The year segment is included in the number.
-    """
     year = year or datetime.now().year
     prefix = (
         settings_service.get_setting(session, KEY_INVOICE_PREFIX, default=INVOICE_PREFIX)
@@ -197,11 +162,6 @@ def generate_invoice_number(session: Session, year: int | None = None) -> str:
         except (ValueError, IndexError):
             continue
     return f"{full_prefix}{max_sequence + 1:06d}"
-
-
-# ---------------------------------------------------------------------------
-# Snapshot
-# ---------------------------------------------------------------------------
 
 def _counted_manual_items(session: Session, booking: Booking) -> list[dict[str, Any]]:
     from app.database.models import BookingCharge
@@ -236,11 +196,7 @@ def _counted_manual_items(session: Session, booking: Booking) -> list[dict[str, 
 
 
 def build_snapshot(session: Session, booking_id: int) -> dict[str, Any]:
-    """Capture everything printed on an invoice for a booking.
 
-    The snapshot is a plain JSON-serializable dict; all money values are
-    stored as decimal strings so they round-trip exactly.
-    """
     booking = _get_booking_or_raise(session, booking_id)
     guest = booking.guest
     room = booking.room
@@ -359,10 +315,6 @@ def _apply_snapshot_financials(invoice: Invoice, snapshot: dict[str, Any]) -> No
     invoice.payment_status = snapshot.get("payment_status", PaymentStatus.UNPAID.value)
 
 
-# ---------------------------------------------------------------------------
-# Shared render model (used by both the Qt preview and the PDF)
-# ---------------------------------------------------------------------------
-
 def _payment_method_label(method: str) -> str:
     from app.core.constants import PaymentMethod
 
@@ -373,7 +325,6 @@ def _payment_method_label(method: str) -> str:
 
 
 def build_render_model(invoice: Invoice) -> dict[str, Any]:
-    """Build the fully formatted display data shared by preview and PDF."""
     snap = parse_snapshot(invoice.snapshot_json)
     hotel = snap.get("hotel", {})
     guest = snap.get("guest", {})
@@ -439,7 +390,7 @@ def build_render_model(invoice: Invoice) -> dict[str, Any]:
         ],
         "footer_message": (snap.get("footer_message") or "Thank you for staying with us!"),
         "terms": (snap.get("terms") or "").strip(),
-        "gst": None,  # GST is disabled — never shown.
+        "gst": None, 
     }
 
 
@@ -450,11 +401,6 @@ def _format_payment_date(iso_date: str) -> str:
         return format_date(date.fromisoformat(iso_date))
     except ValueError:
         return iso_date
-
-
-# ---------------------------------------------------------------------------
-# Creation
-# ---------------------------------------------------------------------------
 
 def get_finalized_invoice_for_booking(session: Session, booking_id: int) -> Invoice | None:
     for invoice in get_invoices_for_booking(session, booking_id):
@@ -473,11 +419,7 @@ def get_invoices_for_booking(session: Session, booking_id: int) -> list[Invoice]
 
 
 def get_or_create_draft_invoice(session: Session, booking_id: int) -> Invoice:
-    """Return the booking's draft invoice or create a fresh one.
-
-    Raises :class:`DuplicateFinalizedInvoiceError` when a finalized
-    invoice already exists — no second finalized invoice may be created.
-    """
+  
     booking = _get_booking_or_raise(session, booking_id)
     _validate_invoiceable_status(booking)
     finalized = get_finalized_invoice_for_booking(session, booking_id)
@@ -556,11 +498,6 @@ def refresh_draft_snapshot(session: Session, invoice_id: int) -> Invoice:
     session.refresh(invoice)
     return invoice
 
-
-# ---------------------------------------------------------------------------
-# Finalization / cancellation
-# ---------------------------------------------------------------------------
-
 def finalize_invoice(session: Session, invoice_id: int, invoice_dir: str | Path) -> Invoice:
     """Finalize a draft invoice and generate its PDF.
 
@@ -610,10 +547,6 @@ def cancel_invoice(session: Session, invoice_id: int, reason: str = "") -> Invoi
     return invoice
 
 
-# ---------------------------------------------------------------------------
-# PDF
-# ---------------------------------------------------------------------------
-
 def pdf_filename(invoice_number: str) -> str:
     return f"{invoice_number}.pdf"
 
@@ -637,11 +570,6 @@ def regenerate_pdf(session: Session, invoice_id: int, invoice_dir: str | Path) -
     session.refresh(invoice)
     logger.info("PDF regenerated for invoice %s", invoice.invoice_number)
     return pdf_path
-
-
-# ---------------------------------------------------------------------------
-# Queries
-# ---------------------------------------------------------------------------
 
 def get_invoice(session: Session, invoice_id: int) -> Invoice | None:
     return session.get(Invoice, invoice_id)
