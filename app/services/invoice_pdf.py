@@ -1,15 +1,3 @@
-"""ReportLab PDF generation for invoices.
-
-Renders a professional, offline A4 invoice from the shared render model
-produced by :func:`app.services.invoice_service.build_render_model`. The
-same render model drives the on-screen preview, so the preview and the
-printed document always match.
-
-A Unicode TrueType font (Segoe UI / Arial) is registered when available so
-the Indian Rupee symbol renders correctly; otherwise ReportLab's built-in
-Helvetica is used.
-"""
-
 from __future__ import annotations
 
 import logging
@@ -87,11 +75,6 @@ def _register_unicode_font() -> None:
 
 _register_unicode_font()
 
-
-# ---------------------------------------------------------------------------
-# Styles
-# ---------------------------------------------------------------------------
-
 def _base_style() -> ParagraphStyle:
     return ParagraphStyle("base", fontName=_FONT, fontSize=9.5, leading=13, textColor=_DARK)
 
@@ -150,11 +133,6 @@ _PAGE_WIDTH, _PAGE_HEIGHT = A4
 _MARGIN = 14 * mm
 _CONTENT_WIDTH = _PAGE_WIDTH - 2 * _MARGIN
 
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
 def _p(text: str, style: str) -> Paragraph:
     return Paragraph(_escape(text), _STYLES[style])
 
@@ -203,7 +181,6 @@ def _header_logo(render: dict[str, Any]) -> tuple[list[Any], int]:
         contact.append(_p(f"Phone: {render['hotel_phone']}", "hotel_line"))
     if render["hotel_email"]:
         contact.append(_p(f"Email: {render['hotel_email']}", "hotel_line"))
-    # Website is only shown when configured — never an empty line.
 
     right_cell = [hotel_name]
     if description is not None:
@@ -267,7 +244,7 @@ def _load_logo(logo_path: str | None) -> tuple[Any, float]:
             Image(str(path), width=image_width * scale, height=image_height * scale),
             image_height * scale,
         )
-    except Exception:  # noqa: BLE001 - never break the invoice over a logo
+    except Exception: 
         logger.warning("Could not load hotel logo %s", logo_path)
         return None, 0
 
@@ -444,12 +421,6 @@ def _guest_stay_table(render: dict[str, Any]) -> Table:
         )
     )
     return table
-
-
-# ---------------------------------------------------------------------------
-# Entry point
-# ---------------------------------------------------------------------------
-
 def generate_invoice_pdf(render: dict[str, Any], output_path: str | Path) -> Path:
     """Render the render model to a PDF at ``output_path`` and return it."""
     output_path = Path(output_path)
