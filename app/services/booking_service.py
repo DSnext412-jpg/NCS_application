@@ -1,10 +1,3 @@
-"""Booking service.
-
-All booking business logic lives here: reservations, walk-ins, check-in,
-check-out, cancellation, no-show, editing, search/filter and the critical
-room-availability logic. UI widgets never touch the database directly.
-"""
-
 from __future__ import annotations
 
 import logging
@@ -30,25 +23,12 @@ _UNSET = object()
 
 
 class BookingError(Exception):
-    """Base exception for booking domain errors."""
-
 
 class BookingValidationError(BookingError):
-    """Raised when booking data is invalid."""
-
 
 class RoomNotAvailableError(BookingError):
-    """Raised when a room is double-booked for the requested dates."""
-
 
 class InvalidBookingStateError(BookingError):
-    """Raised when an action is not valid for the booking's current status."""
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
 def _combine(day: date, t: dtime | None) -> datetime:
     return datetime.combine(day, t or dtime(0, 0))
 
@@ -123,10 +103,6 @@ def _record_status_change(session: Session, booking: Booking, new_status: str, n
     )
 
 
-# ---------------------------------------------------------------------------
-# Booking number generation
-# ---------------------------------------------------------------------------
-
 def generate_booking_number(session: Session, year: int | None = None) -> str:
     """Generate the next unique booking number: NCS-B-<YEAR>-000001.
 
@@ -145,9 +121,6 @@ def generate_booking_number(session: Session, year: int | None = None) -> str:
     return f"{prefix}{max_sequence + 1:06d}"
 
 
-# ---------------------------------------------------------------------------
-# Availability
-# ---------------------------------------------------------------------------
 
 def get_room_blocking_bookings(session: Session, room_id: int, exclude_booking_id: int | None = None) -> list[Booking]:
     """Active bookings (RESERVED/CHECKED_IN) for a room that block dates."""
@@ -290,9 +263,6 @@ def _release_room(session: Session, room_id: int) -> None:
     set_room_cleaning(session, room_id, note="Awaiting cleaning")
 
 
-# ---------------------------------------------------------------------------
-# Creation
-# ---------------------------------------------------------------------------
 
 def _build_booking(
     session: Session,
@@ -510,10 +480,6 @@ def _record_ota_online_payment(session: Session, booking: Booking, source_name: 
     session.commit()
     session.refresh(booking)
 
-
-# ---------------------------------------------------------------------------
-# Lifecycle transitions
-# ---------------------------------------------------------------------------
 
 def check_in_booking(
     session: Session,
