@@ -1,9 +1,3 @@
-"""Hotel settings service.
-
-Small read/write helpers on top of the :class:`HotelSetting` table plus a
-seeding routine used at startup to populate the default settings.
-"""
-
 from __future__ import annotations
 
 from typing import Any
@@ -15,7 +9,6 @@ from app.database.models import HotelSetting
 
 
 def get_settings(session: Session) -> dict[str, str]:
-    """Return all settings as a ``{key: value}`` dict."""
     return {row.key: row.value for row in session.query(HotelSetting).all()}
 
 
@@ -42,7 +35,6 @@ def set_setting(session: Session, key: str, value: Any) -> None:
 
 
 def initialize_default_settings(session: Session) -> dict[str, str]:
-    """Insert missing default settings, leaving existing values untouched."""
     existing = {row.key for row in session.query(HotelSetting).all()}
     for key, value in DEFAULT_HOTEL_SETTINGS.items():
         if key not in existing:
@@ -52,15 +44,8 @@ def initialize_default_settings(session: Session) -> dict[str, str]:
 
 
 def get_hotel_settings(session: Session) -> dict[str, str]:
-    """Hotel identity/contact settings (keys starting with ``hotel_``)."""
     settings = get_settings(session)
-    keys = [
-        KEY_HOTEL_NAME,
-        KEY_HOTEL_DESCRIPTION,
-        KEY_HOTEL_ADDRESS,
-        KEY_HOTEL_PHONE,
-        KEY_HOTEL_EMAIL,
-        KEY_HOTEL_WEBSITE,
-        KEY_LOGO_PATH,
+    keys=[
+        KEY_HOTEL_NAME,KEY_HOTEL_DESCRIPTION,KEY_HOTEL_ADDRESS,KEY_HOTEL_PHONE,KEY_HOTEL_EMAIL,KEY_HOTEL_WEBSITE,KEY_LOGO_PATH,
     ]
     return {key: settings.get(key, "") for key in keys}
