@@ -1,10 +1,4 @@
-"""Admin Settings service.
 
-Handles the configuration edits only an Admin can make: hotel identity and
-contact details, website, logo management and booking sources. Changes are
-persisted via the settings/source tables and should be audited by the caller
-(:func:`app.services.audit_service.log_action`).
-"""
 
 from __future__ import annotations
 
