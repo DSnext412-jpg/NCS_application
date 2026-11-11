@@ -1,20 +1,3 @@
-"""Admin analytics service.
-
-Provides the numbers behind the Admin Dashboard and its reports, using a
-single, clearly defined set of rules (see Phase 6 spec):
-
-REVENUE      -> sum of *completed* payments whose *payment_date* falls in range.
-OUTSTANDING  -> per-booking (grand_total - completed payments), only where > 0.
-BOOKING COUNT-> unique bookings.
-OCCUPANCY    -> room-night based for historical/date ranges.
-CURRENT ROOM STATUS -> actual current room.status values.
-BOOKING SOURCE -> booking_source attached to the booking.
-PAYMENT METHOD -> the payment's own transaction method.
-
-Money is never double-counted: completed payment amounts are summed once by
-their transaction date. Unpaid invoice amounts are never treated as revenue.
-"""
-
 from __future__ import annotations
 
 from datetime import date, timedelta
@@ -55,11 +38,6 @@ def _overlap_nights(
     start = max(booking.check_in_date, date_from)
     end = min(booking.check_out_date, date_to)
     return max(0, (end - start).days)
-
-
-# ---------------------------------------------------------------------------
-# Revenue
-# ---------------------------------------------------------------------------
 
 def get_revenue(session: Session, date_from: date, date_to: date) -> Any:
     """Collected revenue: completed payments whose payment_date is in range."""
@@ -171,10 +149,6 @@ def get_period_revenue(session: Session, today: date | None = None) -> dict[str,
     }
 
 
-# ---------------------------------------------------------------------------
-# Payment overview
-# ---------------------------------------------------------------------------
-
 def _bookings_overlapping(
     session: Session, date_from: date, date_to: date
 ) -> list[Booking]:
@@ -221,11 +195,6 @@ def get_payment_overview(
         "unpaid": unpaid,
     }
 
-
-# ---------------------------------------------------------------------------
-# Booking sources
-# ---------------------------------------------------------------------------
-
 def get_booking_counts_by_source(
     session: Session, date_from: date, date_to: date
 ) -> dict[str, int]:
@@ -265,11 +234,6 @@ def get_revenue_by_source(
     )
     return {name: to_decimal(total) for name, total in rows}
 
-
-# ---------------------------------------------------------------------------
-# Occupancy
-# ---------------------------------------------------------------------------
-
 def _available_rooms(session: Session) -> list[Room]:
     """Active rooms available to be occupied."""
     return list(session.query(Room).filter(Room.is_active.is_(True)))
@@ -278,12 +242,7 @@ def _available_rooms(session: Session) -> list[Room]:
 def get_occupancy(
     session: Session, date_from: date, date_to: date
 ) -> dict[str, Any]:
-    """Room-night based occupancy for the range.
 
-    Available room nights = active rooms x days. Occupied room nights =
-    nights actually stayed (checked-in / checked-out bookings overlapping
-    the range). Inactive rooms are never counted as available.
-    """
     date_from, date_to = _normalize_range(date_from, date_to)
     rooms = _available_rooms(session)
     days = _day_count(date_from, date_to)
@@ -304,7 +263,6 @@ def get_occupancy(
 def get_room_type_report(
     session: Session, date_from: date, date_to: date
 ) -> list[dict[str, Any]]:
-    """AC / Non-AC room-night totals, occupied nights and occupancy %."""
     date_from, date_to = _normalize_range(date_from, date_to)
     days = _day_count(date_from, date_to)
     rooms = _available_rooms(session)
@@ -378,20 +336,10 @@ def get_room_performance(
         )
     return result
 
-
-# ---------------------------------------------------------------------------
-# Trends
-# ---------------------------------------------------------------------------
-
 def get_booking_trend(
     session: Session, date_from: date, date_to: date
 ) -> list[dict[str, Any]]:
-    """Per-day bookings: reservations, check-ins and check-outs (no double count).
 
-    Reservations are bucketed by check-in date (status reserved/new only).
-    Check-ins are bucketed by check-in date (status checked-in/checked-out).
-    Check-outs are bucketed by check-out date (status checked-out).
-    """
     date_from, date_to = _normalize_range(date_from, date_to)
     reserved = {b.check_in_date: 0 for b in session.query(Booking).filter(
         Booking.status.in_((BookingStatus.RESERVED.value, BookingStatus.NEW.value)),
