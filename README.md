@@ -1,169 +1,334 @@
-# Nashik Comfort Stay — Hotel Management System
+# 🏨 NASHIK COMFORT STAY
+### A Complete Hotel Management System — Built for Real-World Reception Operations
 
-A local-first, offline-first Windows desktop application for **Nashik Comfort Stay**,
-a small luxury-room stay property in Nashik.
+<p align="center">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&pause=1000&color=D6AD65&center=true&vCenter=true&width=750&lines=Simplifying+Hotel+Management.;Designed+for+Real+Reception+Workflows.;Offline-First.+Reliable.+Practical." alt="Typing SVG" />
+</p>
 
-## Purpose
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/PySide6-Qt-41CD52?style=for-the-badge&logo=qt&logoColor=white" />
+  <img src="https://img.shields.io/badge/SQLite-Local%20Database-003B57?style=for-the-badge&logo=sqlite&logoColor=white" />
+  <img src="https://img.shields.io/badge/SQLAlchemy-ORM-D71F00?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Platform-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white" />
+</p>
 
-A complete hotel management system covering the full reception workflow — room
-management, guest management, bookings, check-in/check-out, payments, invoicing,
-admin analytics, reports and automatic backups. Everything runs locally on a
-single machine; no internet connection or server is required.
+<p align="center">
+  <strong>A practical, offline-first hotel management solution designed to handle everyday hotel operations from a single Windows computer.</strong>
+</p>
 
-## Features
+---
 
-- **Reception dashboard** — live room board, today's check-ins/check-outs,
-  occupancy counts, upcoming bookings and one-click quick actions.
-- **Rooms** — room-card grid with status badges (Vacant / Occupied / Reserved /
-  Cleaning / Maintenance), AC & Non-AC types, notes and status history.
-- **Guests** — add, edit, view and search guests; ID masking; per-guest booking
-  history.
-- **Bookings** — reservations and walk-ins; advance payment; manual rates,
-  extra-person and early/late check charges; availability checks; booking
-  numbers that are never reused.
-- **Check-in / Check-out** — lifecycle with status history; check-out blocks
-  until the balance is settled, applies an editable late check-out charge when
-  the guest leaves late, records the actual check-out time and marks the room
-  for cleaning.
-- **Payments** — cash / UPI / QR / other; partial payments; discounts; payment
-  reversal (records kept, never deleted).
-- **Invoices** — draft → finalize → PDF (ReportLab); print / open / re-generate;
-  cancelled drafts retained in history. GST is disabled (property has none).
-- **Admin** — password-protected (PBKDF2, no default password, no backdoor):
-  revenue KPIs, booking-source and payment-method charts, financial / source /
-  occupancy / booking-trend reports with CSV/Excel/PDF export, hotel settings
-  and logo, booking-source management, full audit log.
-- **Backup & data safety** — `.ncsbackup` packages (database + invoices + logo)
-  via the SQLite online-backup API, integrity-verified, with safe restore,
-  retention and automatic daily/weekly backups.
+## ◈ Overview
 
-## Technology stack
+**Nashik Comfort Stay** is a desktop-based Hotel Management System developed to simplify and organize the daily operations of a small hotel.
 
-- Python 3.11+
-- PySide6 (Qt for Python)
-- SQLAlchemy 2.x
-- SQLite (local database, `hotel.db`)
-- ReportLab (invoice PDFs), openpyxl (Excel exports)
-- pytest
+From managing rooms and guest records to handling reservations, check-ins, payments, invoices, reports and backups, the application brings essential reception and administrative workflows into one place.
 
-## Windows EXE (end users)
+Unlike cloud-dependent hotel platforms, this application follows a **local-first architecture**. Its database and operational files stay on the local computer, allowing normal operation without an internet connection.
 
-### Running the application
+### Core objectives
 
-1. Copy `NashikComfortStay.exe` to the Windows computer.
-2. Double-click the EXE.
-3. The application creates its local data automatically.
-4. No Python installation is required.
-5. No internet connection is required for normal operation.
+- Simplify daily reception operations.
+- Maintain organized guest and booking records.
+- Track room availability and housekeeping status.
+- Manage payments, balances and invoices.
+- Provide useful financial and occupancy reports.
+- Keep hotel data locally accessible and backed up.
 
-### Data location
+---
 
-`%LOCALAPPDATA%\NashikComfortStay\`
+## ◈ System Architecture
 
-(e.g. `C:\Users\<User>\AppData\Local\NashikComfortStay\`)
+```text
+             NASHIK COMFORT STAY
+             HOTEL MANAGEMENT
+                     │
+          ┌──────────┴──────────┐
+          │                     │
+     RECEPTION              ADMIN PANEL
+          │                     │
+   ┌──────┼──────┐        ┌──────┼──────┐
+   │      │      │        │      │      │
+ Rooms  Guests Bookings  Reports Finance Settings
+   │      │      │        │      │      │
+   └──────┴──────┴────────┴──────┴──────┘
+                     │
+              SERVICE LAYER
+                     │
+              SQLAlchemy ORM
+                     │
+                SQLite DB
+                     │
+          Local Files & Backups
+```
 
-The database, backups, invoices, reports, logs and the uploaded hotel logo
-are stored here — **outside** the EXE.
+---
 
-**IMPORTANT:** Do not delete this folder unless you intentionally want to
-remove the hotel's local data.
+## ◈ Key Features
 
-### Backups
+### 🛎️ Reception Dashboard
+- Live room availability overview.
+- Today's check-ins and check-outs.
+- Occupancy statistics.
+- Upcoming reservations.
+- Quick actions for common reception tasks.
 
-Use the application's **Backup & Restore** feature regularly (Admin →
-Backup & Restore). Backups are saved to
-`Documents\Nashik Comfort Stay\Backups`.
+### 🏠 Room Management
+- Room-wise visual status board.
+- AC and Non-AC room categories.
+- Vacant, Occupied, Reserved, Cleaning and Maintenance statuses.
+- Room notes and status history.
+- Room availability tracking.
 
-Each computer has its own local hotel database. To move data to another
-computer, create a backup on one machine and restore it on the other
-(Admin → Backup & Restore → Restore).
+### 👤 Guest Management
+- Create, update and search guest records.
+- Guest contact and address details.
+- Multiple identification document types.
+- Masked ID numbers for safer display.
+- Guest-wise booking history.
 
-### Notes for end users
+### 📅 Booking Management
+- Advance reservations and walk-in bookings.
+- Booking availability validation.
+- Manual room rates and additional charges.
+- Booking source tracking.
+- Check-in and check-out workflows.
+- Cancellation and no-show records.
+- Unique booking numbers that are never reused.
 
-- An unsigned, locally built EXE may trigger a Windows SmartScreen
-  "unknown publisher" warning. This is normal for internally built
-  software; choose "More info" → "Run anyway" when you trust the source.
-- Reception screens need no login; Admin screens require the admin
-  password, which is set on first use.
+### 💳 Payment Management
+- Cash, UPI, QR and other payment methods.
+- Full and partial payments.
+- Paid, Partial and Unpaid status tracking.
+- Discounts and additional charges.
+- Payment history and reversal records.
+- Outstanding balance calculation.
 
-## For developers
+### 🧾 Invoice & Billing
+- Draft and finalized invoices.
+- Unique invoice numbering.
+- PDF invoice generation.
+- Invoice preview and history.
+- Payment and balance details.
+- Finalized invoice snapshots.
+- GST disabled as per the property's requirements.
 
-### Installation
+### 📊 Admin Dashboard & Analytics
+- Password-protected administration.
+- Revenue overview: daily, weekly, monthly and yearly.
+- Occupancy and room performance analytics.
+- Booking source statistics.
+- Payment method statistics.
+- Booking and revenue trends.
+- Custom date-range reports.
 
-### 1. Create a virtual environment
+### 📁 Reports & Data Safety
+- Financial reports.
+- Booking source reports.
+- Occupancy reports.
+- Booking trend reports.
+- CSV, Excel and PDF exports.
+- Local database backups.
+- Backup integrity verification.
+- Backup restoration and retention management.
 
-```powershell
+---
+
+## ◈ Technology Stack
+
+| Technology | Purpose |
+|---|---|
+| Python 3.11+ | Core application logic |
+| PySide6 | Desktop graphical interface |
+| SQLAlchemy 2.x | Database ORM |
+| SQLite | Local database |
+| ReportLab | PDF invoices and reports |
+| openpyxl | Excel exports |
+| pytest | Automated testing |
+| PyInstaller | Windows executable packaging |
+
+---
+
+## ◈ Project Structure
+
+```text
+NCS_application/
+│
+├── app/
+│   ├── core/              # Configuration, constants and paths
+│   ├── database/          # Database, models and migrations
+│   ├── services/          # Business logic and operations
+│   └── ui/                # Desktop interface
+│
+├── assets/
+│   └── icons/
+│
+├── scripts/
+│   ├── build_windows.py
+│   ├── make_icon.py
+│   └── smoke_run.py
+│
+├── tests/                 # Automated tests
+│
+├── main.py                # Application entry point
+├── requirements.txt
+├── NashikComfortStay.spec
+├── PROJECT_PHASES.md
+└── README.md
+```
+
+---
+
+## ◈ Getting Started
+
+### Prerequisites
+
+- Windows
+- Python 3.11 or later
+- pip
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/DSnext412-jpg/NCS_application.git
+```
+
+```bash
+cd NCS_application
+```
+
+### 2. Create a virtual environment
+
+```bash
 python -m venv .venv
 ```
 
-### 2. Activate it
+### 3. Activate the environment
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 ```
 
-### 3. Install dependencies
+### 4. Install dependencies
 
-```powershell
+```bash
 pip install -r requirements.txt
 ```
 
-## Run
+### 5. Run the application
 
-```powershell
+```bash
 python main.py
 ```
 
-## Test
+---
 
-```powershell
-python -m pytest
-```
+## ◈ Windows Executable
 
-Tests use temporary SQLite databases in `tmp_path` and never touch production
-data. Run a headless smoke check with:
+The project includes a Windows build script that runs tests and a smoke check before packaging the application.
 
-```powershell
-python scripts/smoke_run.py
-```
-
-### Building the Windows EXE
-
-A reproducible build script runs the tests, the smoke test, then builds the
-one-file windowed EXE and assembles the `release/` directory:
-
-```powershell
+```bash
 python scripts/build_windows.py
 ```
 
-Requirements: `pyinstaller` installed in the virtual environment
-(`.venv\Scripts\python.exe -m pip install pyinstaller`).
+The primary packaged application is generated at:
 
-- Primary deliverable: `release\NashikComfortStay.exe` (one-file, windowed,
-  no console window).
-- Portable/ONEDIR troubleshooting build: `NashikComfortStayPortable.spec`
-  (output in `dist\NashikComfortStayPortable\`).
-- The build never touches production data or `%LOCALAPPDATA%\NashikComfortStay\`.
+```text
+release/
+└── NashikComfortStay.exe
+```
 
+The executable is designed to run without requiring a separate Python installation.
 
-## Notes
+**Local data location:**
 
-- The 11 standard rooms (AC 202–207, Non-AC 208–212) are seeded automatically
-  on first run. Room rates are **not** hard-coded; they are entered manually per
-  booking.
-- A 12th guest/property room is intentionally not seeded; Admin can add rooms
-  via the settings architecture.
-- OTA bookings from **Agoda, FabHotels, MakeMyTrip and Goibibo** (not
-  Booking.com) can be marked **Paid Online** when the guest already prepaid the
-  OTA. For such bookings the Room Rate and Extra Person fields are hidden (the
-  hotel records nothing for the room) and only Early Check-in / Late Check-out
-  charges can be added. Bookings can also be left as **Pay at Hotel**.
-- A reservation whose check-in is in the future does **not** mark the room as
-  "Reserved" — the room stays available so it can still be used before the
-  check-in date (the reservation still blocks its own dates).
-- GST is **disabled** and remains disabled (the property has no GST) — GST
-  figures are always zero and never printed.
-- Reception is login-free; only Admin pages require a password. The admin
-  password is set on first use (stored as a PBKDF2 hash, never plaintext).
-- Backups are intentionally **not** encrypted — a documented design choice for
-  a local, offline, single-machine application.
+```text
+%LOCALAPPDATA%\NashikComfortStay\
+```
+
+The database, invoices, reports, logs, backups and hotel logo are stored outside the executable.
+
+---
+
+## ◈ Testing
+
+Run the automated test suite:
+
+```bash
+python -m pytest
+```
+
+Run the headless application smoke check:
+
+```bash
+python scripts/smoke_run.py
+```
+
+Tests use temporary SQLite databases rather than the hotel's production data.
+
+---
+
+## ◈ Project Configuration
+
+The application initializes the following standard rooms automatically:
+
+| Room Numbers | Category | Count |
+|---|---|---:|
+| 202–207 | AC | 6 |
+| 208–212 | Non-AC | 5 |
+| **Total** | | **11** |
+
+Other implementation details:
+
+- Room rates are entered manually per booking.
+- Reception access does not require login.
+- Admin access requires a password configured on first use.
+- Admin passwords are stored as PBKDF2 hashes.
+- Booking and invoice records use persistent unique numbering.
+- GST calculations and printing remain disabled.
+
+---
+
+## ◈ Engineering Principles
+
+This project focuses on practical software engineering decisions:
+
+- **Local-first:** Normal operation does not depend on a remote server.
+- **Modular architecture:** UI, services, database and core logic are separated.
+- **Data integrity:** Financial and booking records retain important history.
+- **Security:** Admin authentication and password hashing.
+- **Reliability:** Automated tests, smoke checks and verified backups.
+- **Maintainability:** Structured modules and documented development phases.
+
+---
+
+## ◈ Development Documentation
+
+For a detailed breakdown of the implementation, milestones and completed modules, see:
+
+📘 [PROJECT_PHASES.md](PROJECT_PHASES.md)
+
+---
+
+## ◈ About the Project
+
+Nashik Comfort Stay is a real-world-oriented software project built around the operational requirements of a hotel reception.
+
+The goal was not simply to create a CRUD application, but to build a structured desktop system that handles interconnected workflows such as room availability, reservations, payments, billing, reporting and local data management.
+
+---
+
+<p align="center">
+  <strong>Built with Python. Designed for real operations.</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/DSnext412-jpg">GitHub Profile</a> •
+  <a href="https://dipak-sonawane.onrender.com/">Portfolio</a> •
+  <a href="https://github.com/DSnext412-jpg/NCS_application">Repository</a>
+</p>
+
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:171717,50:6B5635,100:D6AD65&height=110&section=footer" />
+</p>
