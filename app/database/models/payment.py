@@ -1,12 +1,3 @@
-"""Payment model.
-
-Every payment received against a booking. Payments are never deleted —
-a completed payment can be reversed (``status`` → ``reversed`` /
-``refunded``) so the history stays auditable. ``status`` is
-``completed`` by default; ``reversed_at`` and ``reversal_reason`` are
-set when a payment is reversed.
-"""
-
 from __future__ import annotations
 
 from datetime import date, datetime
