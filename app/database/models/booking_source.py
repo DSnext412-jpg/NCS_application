@@ -1,8 +1,3 @@
-"""Booking source model.
-
-Stored separately from bookings so Admin can add/edit/disable sources in
-a future phase without touching booking records.
-"""
 
 from __future__ import annotations
 
