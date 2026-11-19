@@ -1,10 +1,4 @@
-"""Booking status change history.
 
-Records every booking status transition (reserved → checked-in →
-checked-out, cancellation, no-show) so reception can later answer
-"what happened and when". ``changed_by`` defaults to "Reception"
-because staff login does not exist yet.
-"""
 
 from __future__ import annotations
 
