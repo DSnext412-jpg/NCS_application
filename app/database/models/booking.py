@@ -1,9 +1,3 @@
-"""Booking model.
-
-Represents a reservation or a walk-in stay. Room rates and all charges
-are entered manually by reception at booking time and stored on the
-booking, so future price changes never modify existing bookings.
-"""
 
 from __future__ import annotations
 
