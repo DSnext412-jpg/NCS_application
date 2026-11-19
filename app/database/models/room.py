@@ -1,10 +1,3 @@
-"""Room configuration model.
-
-Rooms are deliberately stored WITHOUT any price column: room rates and
-extra-person charges are entered manually by reception staff at booking
-time. This table simply records which rooms exist and their category.
-"""
-
 from __future__ import annotations
 
 from datetime import datetime
