@@ -1,10 +1,3 @@
-"""Room status change history.
-
-Records every room status change so Admin reports can later answer
-"what happened" questions. ``changed_by`` defaults to "Reception"
-because staff login does not exist yet.
-"""
-
 from __future__ import annotations
 
 from datetime import datetime
