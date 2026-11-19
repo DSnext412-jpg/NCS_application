@@ -1,12 +1,3 @@
-"""Booking charge model.
-
-Manual charges reception can add to a booking — extra mattresses,
-miscellaneous and other charges. The base charges (room rate, extra
-person, early check-in, late check-out) are stored directly on the
-booking and are NOT duplicated here; ``ROOM``-type rows represent an
-additional manual room charge (e.g. same-day stays where the derived
-room charge is zero).
-"""
 
 from __future__ import annotations
 
@@ -34,5 +25,5 @@ class BookingCharge(Base):
 
     booking: Mapped["Booking"] = relationship(back_populates="charges")
 
-    def __repr__(self) -> str:  # pragma: no cover - debugging aid
+    def __repr__(self) -> str: 
         return f"<BookingCharge id={self.id} booking={self.booking_id} {self.charge_type}>"
