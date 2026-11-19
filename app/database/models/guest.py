@@ -1,10 +1,4 @@
-"""Guest model.
 
-Only guest identity metadata is stored — never document files. Document
-attachments can be added in a future phase. Only ``guest_name`` and
-``mobile_number`` are required; everything else is optional so reception
-can continue even when optional details are unknown.
-"""
 
 from __future__ import annotations
 
