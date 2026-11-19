@@ -21,5 +21,5 @@ class BookingSource(Base):
 
     bookings: Mapped[list["Booking"]] = relationship(back_populates="source")
 
-    def __repr__(self) -> str:  # pragma: no cover - debugging aid
+    def __repr__(self) -> str: 
         return f"<BookingSource {self.name!r}>"
