@@ -1,8 +1,3 @@
-"""Hotel settings key/value storage.
-
-Stored as generic string values so new settings can be added without
-schema changes. Booleans and numbers are converted on read.
-"""
 
 from __future__ import annotations
 
