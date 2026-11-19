@@ -1,12 +1,3 @@
-"""Invoice model.
-
-An invoice is a financial document produced from a booking at checkout.
-Once it is ``FINALIZED`` it becomes authoritative and immutable: all the
-information needed to reprint it (guest, room, stay, line items and money
-figures) is frozen into ``snapshot_json`` so later edits to the guest or
-booking never silently change an issued invoice.
-"""
-
 from __future__ import annotations
 
 from datetime import date, datetime
