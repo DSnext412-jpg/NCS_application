@@ -1,8 +1,3 @@
-"""Global reception search (Ctrl+K).
-
-Searches guests and bookings from anywhere in the application. Double
-clicking a result opens the relevant details dialog.
-"""
 
 from __future__ import annotations
 
