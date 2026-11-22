@@ -1,8 +1,3 @@
-"""New reservation / edit booking dialog.
-
-Organized into clear sections: Guest, Stay, Booking, Notes. Room rates and
-all charges are entered manually by reception and stored on the booking.
-"""
 
 from __future__ import annotations
 
