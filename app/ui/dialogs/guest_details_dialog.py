@@ -1,4 +1,3 @@
-"""Guest details dialog: guest information + booking history."""
 
 from __future__ import annotations
 
