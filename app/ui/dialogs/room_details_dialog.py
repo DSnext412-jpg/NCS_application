@@ -1,10 +1,3 @@
-"""Room details dialog.
-
-Allows reception to view room information, change its status (with a
-confirmation dialog), edit notes, and activate/deactivate the room.
-Every database write goes through the room service; the dialog never
-touches the database directly.
-"""
 
 from __future__ import annotations
 
