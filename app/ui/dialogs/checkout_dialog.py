@@ -1,11 +1,3 @@
-"""Check-out dialog.
-
-Shows the financial summary before confirming a check-out. A booking with a
-remaining balance cannot be checked out (the payment must be collected first).
-The actual check-out time is recorded, and a default late check-out charge
-(editable) is auto-applied when the guest checks out several hours after the
-scheduled check-out time.
-"""
 
 from __future__ import annotations
 
