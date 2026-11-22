@@ -1,9 +1,3 @@
-"""Restore backup dialog.
-
-Guides Admin through a safe restore: pick a ``.ncsbackup`` file, preview
-its details, show a strong warning, then restore through the backup
-service. On success the application asks for a restart.
-"""
 
 from __future__ import annotations
 
