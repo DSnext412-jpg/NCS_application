@@ -1,13 +1,4 @@
-"""Invoice dialog.
 
-Shows the shared invoice preview and offers status-appropriate actions:
-* DRAFT      -> [Back] [Cancel Invoice] [Finalize Invoice]
-* FINALIZED  -> [Print] [Open PDF] [Re-generate PDF] [Close]
-* CANCELLED  -> [Open PDF] [Re-generate PDF] [Close]
-
-Finalized invoices are never edited here — only viewed, printed and
-regenerated from their frozen snapshot.
-"""
 
 from __future__ import annotations
 
