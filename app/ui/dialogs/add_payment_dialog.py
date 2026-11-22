@@ -1,4 +1,3 @@
-"""Add Payment dialog: record a payment against a booking."""
 
 from __future__ import annotations
 
@@ -24,7 +23,7 @@ from app.services import financial_service
 
 
 class AddPaymentDialog(QDialog):
-    def __init__(self, database: Database, booking_id: int, parent=None) -> None:  # noqa: ANN001
+    def __init__(self, database: Database, booking_id: int, parent=None) -> None: 
         super().__init__(parent)
         self.database = database
         self.booking_id = booking_id
@@ -36,7 +35,6 @@ class AddPaymentDialog(QDialog):
         self._build_ui()
         self._load_balance()
 
-    # ------------------------------------------------------------------ ui
 
     def _build_ui(self) -> None:
         layout = QVBoxLayout(self)
@@ -113,7 +111,6 @@ class AddPaymentDialog(QDialog):
 
         self.balance_value.setText(format_money(summary.remaining))
 
-    # -------------------------------------------------------------- save
 
     def _save(self) -> None:
         amount = self.amount_spin.value()
