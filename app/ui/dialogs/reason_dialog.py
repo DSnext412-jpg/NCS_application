@@ -1,4 +1,3 @@
-"""Small dialog that prompts for a reason (cancellation / no-show)."""
 
 from __future__ import annotations
 
