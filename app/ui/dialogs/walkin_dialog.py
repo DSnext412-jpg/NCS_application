@@ -1,11 +1,3 @@
-"""Quick walk-in dialog.
-
-Minimal fields for speed: guest details, a currently available room,
-check-out date/time, room rate and optional charges. Check-in defaults to
-now. An optional advance payment can be recorded at walk-in time. On save
-the booking becomes CHECKED_IN and the room OCCUPIED. Available rooms are
-re-filtered when the stay dates change.
-"""
 
 from __future__ import annotations
 
