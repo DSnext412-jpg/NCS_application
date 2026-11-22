@@ -1,11 +1,3 @@
-"""Booking details dialog.
-
-Shows every booking field and offers status-appropriate actions:
-Reserved -> Check-in / Cancel / No-show / Edit
-Checked-in -> Check-out (with financial summary)
-View-only otherwise. Also shows the full Charges & Payments section
-(payments, manual charges, discount) for every booking.
-"""
 
 from __future__ import annotations
 
@@ -240,7 +232,6 @@ class BookingDetailsDialog(QDialog):
         value_label.setWordWrap(True)
         self.grid.addWidget(value_label, row, 1)
 
-    # ---------------------------------------------------------------- load
 
     def _load(self) -> None:
         with self.database.session_scope() as session:
