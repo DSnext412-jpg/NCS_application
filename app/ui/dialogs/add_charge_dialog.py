@@ -1,4 +1,3 @@
-"""Add Charge dialog: add a manual charge (extra mattress / misc / other / room)."""
 
 from __future__ import annotations
 
@@ -40,7 +39,6 @@ class AddChargeDialog(QDialog):
 
         self._build_ui()
 
-    # ------------------------------------------------------------------ ui
 
     def _build_ui(self) -> None:
         layout = QVBoxLayout(self)
@@ -122,7 +120,6 @@ class AddChargeDialog(QDialog):
     def current_type(self) -> ChargeType:
         return ChargeType(self.type_combo.currentData())
 
-    # -------------------------------------------------------------- save
 
     def _save(self) -> None:
         try:
