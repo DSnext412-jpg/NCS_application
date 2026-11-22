@@ -1,10 +1,3 @@
-"""Admin login / first-run setup dialog.
-
-If no admin password has been set yet (first run) the dialog walks the user
-through creating one; otherwise it authenticates the existing password. The
-dialog tracks failed attempts and enforces the temporary lockout enforced by
-:mod:`app.services.security_service`.
-"""
 
 from __future__ import annotations
 
@@ -34,7 +27,6 @@ class AdminLoginDialog(QDialog):
         self._build_ui()
         self._start_flow()
 
-    # ------------------------------------------------------------------ ui
 
     def _build_ui(self) -> None:
         layout = QVBoxLayout(self)
@@ -117,7 +109,6 @@ class AdminLoginDialog(QDialog):
             if widget is not None:
                 widget.setVisible(visible)
 
-    # --------------------------------------------------------------- submit
 
     def _submit(self) -> None:
         password = self.password_edit.text()
