@@ -1,4 +1,3 @@
-"""Guest create/edit dialog."""
 
 from __future__ import annotations
 
